@@ -5,18 +5,20 @@ import isEmail from "validator/lib/isEmail";
 import equals from "validator/lib/equals";
 import { showLoading } from "../helpers/loading";
 import { showErrorMsg, showSuccessMsg } from "../helpers/message";
-import "./SignUp.css";
+import "./Signup.css";
+import { signup } from '../api/auth';
+
 
 /******************************************** VIEWS ************************************************/
-const SignUp = () => {
+const Signup = () => {
        const [formData, setFormData] = useState({
-              username: "",
-              email: "",
-              password: "",
-              password2: "",
+              username: "EyaKrifa",
+              email: "eyakrifa@gmail.com",
+              password: "abc123",
+              password2: "abc123",
               successMsg: false,
               errorMsg: false,
-              loading: true,
+              loading: false,
        });
        const { username, email, password, password2, successMsg, errorMsg, loading } = formData;
        /****************************
@@ -49,19 +51,35 @@ const SignUp = () => {
                             ...formData,
                             errorMsg: "Passwords do not match",
                      });
+              
               } else {
-                     //success
-                     setFormData({
-                            ...formData,
-                            successMsg: "Validation success",
-                     });
+                     const { username, email, password } = formData;
+                     const data = { username, email, password };
+                     setFormData({ ...formData, loading: true });
+                     signup(data)
+                            .then((response) => {
+                                   console.log('Axios signup success: ', response);
+                                   setFormData({
+                                          username: '',
+                                          email: '',
+                                          password: '',
+                                          password2: '',
+                                          loading: false,
+                                          successMsg: response.data.successMessage,
+                                   });
+                            })
+                            .catch((err) => {
+                                   console.log('Axios signup error: ', err);
+                                   setFormData({...formData,loading: false, errorMsg: err.response.data.errorMessage });
+                            });
+
               }
        };
 
        /****************************
         * VIEWS
         ***************************/
-       const showSignUpForm = () => (
+       const showSignupForm = () => (
               <form className='signup-form' onSubmit={handleSubmit} noValidate>
                      {/* username */}
                      <div className='form-group input-group'>
@@ -73,11 +91,9 @@ const SignUp = () => {
                             <input
                                    name='username'
                                    value={username}
-                                   className='form-controll'
+                                   className='form-control'
                                    placeholder='Username'
                                    type='text'
-                                   class='form-control'
-                                   aria-describedby='basic-addon3'
                                    onChange={handleChange}
                             />
                      </div>
@@ -153,7 +169,7 @@ const SignUp = () => {
                                    {successMsg && showSuccessMsg(successMsg)}
                                    {errorMsg && showErrorMsg(errorMsg)}
                                    {loading && <div className='text-center pb-4'>{showLoading()}</div>}
-                                   {showSignUpForm()}
+                                   {showSignupForm()}
 
                                    {/* <p style={{ color: "white" }}>{JSON.stringify(formData)}</p>{" "}*/}
                             </div>
@@ -161,4 +177,4 @@ const SignUp = () => {
               </div>
        );
 };
-export default SignUp;
+export default Signup;
