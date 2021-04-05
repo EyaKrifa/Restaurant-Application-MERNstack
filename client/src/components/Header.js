@@ -1,36 +1,89 @@
-import React from 'react';
-import {Link} from 'react-router-dom';
+import React, { Fragment } from "react";
+import { Link, withRouter } from "react-router-dom";
+import { isAuthenticated , logout} from "../helpers/auth";
 
-const Header = () => {
-    //views
-    const showNavigation = () => (
-        <nav className="navbar navbar-expand-lg navbar-dark bg-primary ">
-            <div className="container-fluid">
-                <Link to='/' className="navbar-brand">Logo</Link>
-                <button className="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarTogglerDemo02" aria-controls="navbarTogglerDemo02" aria-expanded="false" aria-label="Toggle navigation">
-                <span className="navbar-toggler-icon"></span>
-                </button>
-                <div className="collapse navbar-collapse" id="navbarTogglerDemo02">
-                <ul className="navbar-nav ml-auto mb-2 mb-lg-0">
-                    <li className="nav-item">
-                    <Link to='/' className="nav-link" aria-current="page">Home</Link>
-                    </li>
-                    <li className="nav-item">
-                    <Link to='/signup' className="nav-link" aria-current="page">Signup</Link>
-                    </li>
-                    <li className="nav-item">
-                    <Link to='/signin' className="nav-link">Signin</Link>
-                    </li>
+const Header = ({history}) => {
+       const handleLogout = (evt) => {
+              logout(() => {
+                  history.push('/signin');
+              });
+          };
+       //views
+       const showNavigation = () => (
+              <nav className='navbar navbar-expand-lg navbar-light bg-light  '>
+                     <div className='container-fluid'>
+                            <Link to='/' className='navbar-brand'>
+                                   Logo
+                            </Link>
+                            <button
+                                   className='navbar-toggler'
+                                   type='button'
+                                   data-bs-toggle='collapse'
+                                   data-bs-target='#navbarTogglerDemo02'
+                                   aria-controls='navbarTogglerDemo02'
+                                   aria-expanded='false'
+                                   aria-label='Toggle navigation'
+                            >
+                                   <span className='navbar-toggler-icon'></span>
+                            </button>
+                            <div className='collapse navbar-collapse' id='navbarTogglerDemo02'>
+                                   <ul className='navbar-nav ml-auto mb-2 mb-lg-0'>
+                                          {!isAuthenticated() && (
+                                                 <Fragment>
+                                                        <li className='nav-item'>
+                                                               <Link to='/' className='nav-link' aria-current='page'>
+                                                               <i className='fas fa-home'></i> Home
+                                                               </Link>
+                                                        </li>
+                                                        <li className='nav-item'>
+                                                               <Link to='/signup' className='nav-link' aria-current='page'>
+                                                               <i className='fas fa-edit'></i> Signup
+                                                               </Link>
+                                                        </li>
+                                                        <li className='nav-item'>
+                                                               <Link to='/signin' className='nav-link'>
+                                                               <i className='fas fa-sign-in-alt'></i>{' '} Signin
+                                                               </Link>
+                                                        </li>
+                                                 </Fragment>
+                                          )}
 
-                </ul>
+                                          {isAuthenticated() && isAuthenticated().role === 0 && (
+                                                 <Fragment>
+                                                        <li className='nav-item'>
+                                                               <Link to='/user/dashboard' className='nav-link' aria-current='page'>
+                                                               <i className='fas fa-home'></i> Dashboard
+                                                               </Link>
+                                                        </li>
+                                                 </Fragment>
+                                          )}
 
-                </div>
-            </div>
-        </nav>
+                                          {isAuthenticated() && isAuthenticated().role === 1 && (
+                                                 <Fragment>
+                                                        <li className='nav-item'>
+                                                               <Link to='/admin/dashboard' className='nav-link' aria-current='page'>
+                                                               <i className='fas fa-home'></i> Dashboard
+                                                               </Link>
+                                                        </li>
+                                                 </Fragment>
+                                          )}
 
-    );
-    //render
-    return <header id='header'>{showNavigation()}</header>;
+                                          {isAuthenticated() && (
+                                                 <Fragment>
+                                                        <li className='nav-item'>
+                                                               <button className='btn btn-link text-secondary text-decoration-none pl-0' onClick={handleLogout}>
+                                                               <i className='fas fa-sign-out-alt'></i>{' '} Logout
+                                                               </button>
+                                                        </li>
+                                                 </Fragment>
+                                          )}
+                                   </ul>
+                            </div>
+                     </div>
+              </nav>
+       );
+       //render
+       return <header id='header'>{showNavigation()}</header>;
 };
 
-export default Header;
+export default withRouter(Header);

@@ -1,16 +1,24 @@
-import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import React, { useState ,useEffect} from "react";
+import { Link,useHistory } from "react-router-dom";
 import isEmpty from "validator/lib/isEmpty";
 import isEmail from "validator/lib/isEmail";
 import equals from "validator/lib/equals";
 import { showLoading } from "../helpers/loading";
 import { showErrorMsg, showSuccessMsg } from "../helpers/message";
-import "./Signup.css";
+import {isAuthenticated} from "../helpers/auth";
 import { signup } from '../api/auth';
 
 
 /******************************************** VIEWS ************************************************/
 const Signup = () => {
+       let history = useHistory();
+       useEffect(() => {
+              if (isAuthenticated() && isAuthenticated().role === 1) {
+                  history.push('/admin/dashboard');
+              } else if (isAuthenticated() && isAuthenticated().role === 0) {
+                  history.push('/user/dashboard');
+              }
+          }, [history]);
        const [formData, setFormData] = useState({
               username: "EyaKrifa",
               email: "eyakrifa@gmail.com",
@@ -35,7 +43,8 @@ const Signup = () => {
        };
 
        const handleSubmit = (evt) => {
-              evt.preventDefault(); // client-side validation
+              evt.preventDefault(); 
+              // client-side validation
               if (isEmpty(username) || isEmpty(email) || isEmpty(password) || isEmpty(password2)) {
                      setFormData({
                             ...formData,
