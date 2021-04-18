@@ -15,6 +15,8 @@ app.use(cookieParser());
 app.use('/api/auth', authRoutes);
 app.use('/api/category', categoryRoutes);
 app.use('/api/product', productRoutes);
+app.use('/uploads', express.static('uploads'));
+
 
 connectDB();
 
