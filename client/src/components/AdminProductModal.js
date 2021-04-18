@@ -1,18 +1,26 @@
-import React, { Fragment, useState, useEffect } from "react";
-import { createProduct } from "../api/product";
-import { getCategories } from "../api/category";
+import React, { Fragment, useState } from "react";
 import isEmpty from "validator/lib/isEmpty";
-import { showErrorMsg, showSuccessMsg } from "../helpers/message";
 import { showLoading } from "../helpers/loading";
+import { showErrorMsg, showSuccessMsg } from "../helpers/message";
+// redux
+import { useSelector, useDispatch } from "react-redux";
+import { clearMessages } from "../redux/actions/messageActions";
+import { createProduct } from "../redux/actions/productActions";
 
 const AdminProductModal = () => {
+       /****************************
+        * REDUX GLOBAL STATE PROPERTIES
+        ***************************/
+       const { loading } = useSelector(state=> state.loading);
+       const { successMsg, errorMsg } = useSelector(state => state.messages);
+       const { categories } = useSelector(state => state.categories);
+       const dispatch = useDispatch();
+
        /********************************
         * Component State propreties
         ********************************/
-       const [categories,setCategories]=useState(null);
-       const [errorMsg, setErrorMsg] = useState("");
-       const [successMsg, setSuccessMsg] = useState("");
-       const [loading, setLoading] = useState(false);
+       const [clientSideError, setClientSideError] = useState("");
+
        const [productData, setProductData] = useState({
               productImage: null,
               productName: "",
@@ -23,58 +31,39 @@ const AdminProductModal = () => {
        });
 
        const { productImage, productName, productDesc, productPrice, productCategory, productQty } = productData;
-       /********************************
-        * LIFECYCLE METHODS
-        ********************************/
-       useEffect(() => {
-              loadCategories();
-       }, [loading]);
-
-       const loadCategories = async () => {
-              await getCategories()
-                     .then((response) => {
-                            setCategories(response.data.categories);
-                            console.log(categories);
-                     })
-                     .catch((err) => {
-                            console.log(err);
-                     });
-       };
 
        /********************************
         * EVENT HANDLERS
         ********************************/
        const handleMessages = (evt) => {
-              setErrorMsg("");
-              setSuccessMsg("");
-              //setCategory(evt.target.value);
+              dispatch(clearMessages());
+              setClientSideError('');      
        };
        const handleProductChange = (evt) => {
               setProductData({
                      ...productData,
                      [evt.target.name]: evt.target.value,
               });
-            
        };
-       const handleProductImage = evt => {
-		console.log(evt.target.files[0]);
-		setProductData({
-			...productData,
-			[evt.target.name]: evt.target.files[0],
-		});
-	};
+       const handleProductImage = (evt) => {
+              console.log(evt.target.files[0]);
+              setProductData({
+                     ...productData,
+                     [evt.target.name]: evt.target.files[0],
+              });
+       };
 
        const handleProductSubmit = (evt) => {
               evt.preventDefault();
 
               if (productImage === null) {
-                     setErrorMsg("Please select an image");
+                     setClientSideError("Please select an image");
               } else if (isEmpty(productName) || isEmpty(productDesc) || isEmpty(productPrice)) {
-                     setErrorMsg("All fields are required");
+                     setClientSideError("All fields are required");
               } else if (isEmpty(productCategory)) {
-                     setErrorMsg("Please select a category");
+                     setClientSideError("Please select a category");
               } else if (isEmpty(productQty)) {
-                     setErrorMsg("Please select a quantity");
+                     setClientSideError("Please select a quantity");
               } else {
                      let formData = new FormData();
 
@@ -84,27 +73,16 @@ const AdminProductModal = () => {
                      formData.append("productPrice", productPrice);
                      formData.append("productCategory", productCategory);
                      formData.append("productQty", productQty);
-                     setLoading(true);
 
-                     createProduct(formData)
-                            .then((response) => {
-                                   //empty all fields
-                                   setLoading(false);
-                                   setProductData({
-                                          productImage: null,
-                                          productName: "",
-                                          productDesc: "",
-                                          productPrice: "",
-                                          productCategory: "",
-                                          productQty: "",
-                                   });
-                                   setSuccessMsg(response.data.successMessage);
-                            })
-                            .catch((err) => {
-                                   setLoading(false);
-                                   console.log(err);
-                                   setErrorMsg(err.response.errorMessage);
-                            });
+                     dispatch(createProduct(formData));
+                     setProductData({
+                            productImage: null,
+                            productName: "",
+                            productDesc: "",
+                            productPrice: "",
+                            productCategory: "",
+                            productQty: "",
+                     });
               }
        };
        /********************************
@@ -124,6 +102,7 @@ const AdminProductModal = () => {
                                                  </button>
                                           </div>
                                           <div className='modal-body my-2'>
+                                                 {clientSideError && showErrorMsg(clientSideError)}
                                                  {errorMsg && showErrorMsg(errorMsg)}
                                                  {successMsg && showSuccessMsg(successMsg)}
 

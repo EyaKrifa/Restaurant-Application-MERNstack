@@ -3,12 +3,14 @@ import thunk from "redux-thunk";
 import { composeWithDevTools } from "redux-devtools-extension";
 import loadingReducer from "./reducers/loadingReducers";
 import messsageReducer from "./reducers/messageReducers";
+import categoryReducer from "./reducers/categoryReducers";
 
-const reducer = combineReducers({});
-const initialState = {
-    loading: loadingReducer,
-    messages: messsageReducer,
-};
+const reducer = combineReducers({
+       loading: loadingReducer,
+       messages: messsageReducer,
+       categories: categoryReducer,
+});
+const initialState = {};
 
 const middleware = [thunk];
 
