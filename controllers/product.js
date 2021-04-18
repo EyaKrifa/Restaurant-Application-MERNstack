@@ -1,4 +1,5 @@
 const Product = require('../models/Product');
+const fs = require('fs');
 
 exports.create=async(req,res) => {
     console.log('req.body: ',req.body);
@@ -43,6 +44,27 @@ exports.readAll = async (req, res) => {
 		res.json({ products });
 	} catch (err) {
 		console.log(err, 'productController.readAll error');
+		res.status(500).json({
+			errorMessage: 'Please try again later',
+		});
+	}
+};
+exports.delete = async (req, res) => {
+	try {
+		const productId = req.params.productId;
+		const deletedProduct = await Product.findByIdAndDelete(productId);
+
+		fs.unlink(`uploads/${deletedProduct.fileName}`, err => {
+			if (err) throw err;
+			console.log(
+				'Image successfully deleted from filesystem: ',
+				deletedProduct.fileName
+			);
+		});
+
+		res.json(deletedProduct);
+	} catch (err) {
+		console.log(err, 'productController.delete error');
 		res.status(500).json({
 			errorMessage: 'Please try again later',
 		});
